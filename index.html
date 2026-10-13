@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#0B0B22" />
+<title>Kaun Nakli? — Find the Imposter</title>
+<style>
+  :root {
+    --navy: #0B0B22;
+    --navy-2: #17173A;
+    --navy-3: #23235A;
+    --yellow: #FFC936;
+    --yellow-press: #F2B21A;
+    --purple: #8857F6;
+    --purple-soft: #E9E1FF;
+    --white: #FFFFFF;
+    --cream: #F8F6F1;
+    --ink: #0B0B22;
+    --muted: #6E6E8A;
+    --line: #E7E4EE;
+    --crimson: #B3122E;
+    --crimson-2: #E0334F;
+    --radius: 20px;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; min-height: 100%; }
+  body {
+    background: var(--cream); color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    transition: background-color .3s ease;
+  }
+  body.dark { background: var(--navy); color: var(--white); }
+  button { font: inherit; color: inherit; cursor: pointer; border: none; background: none; }
+  button:disabled { opacity: .4; cursor: not-allowed; }
+  input { font: inherit; color: var(--ink); background: #F3F2F8; border: 1.5px solid var(--line); border-radius: 14px; padding: 12px 14px; outline: none; width: 100%; }
+  input:focus { border-color: var(--purple); }
+  .unselectable { user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+
+  #app {
+    max-width: 480px; margin: 0 auto; min-height: 100vh; min-height: 100dvh;
+    padding: calc(env(safe-area-inset-top) + 8px) 20px calc(env(safe-area-inset-bottom) + 24px);
+    display: flex; flex-direction: column;
+  }
+
+  /* header */
+  .top { display: flex; align-items: center; justify-content: space-between; min-height: 56px; padding: 6px 0; }
+  .top-title { font-weight: 800; font-size: 17px; text-align: center; flex: 1; }
+  .circle-btn { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; font-size: 18px; flex: none; background: var(--white); color: var(--ink); box-shadow: 0 1px 2px rgba(0,0,0,.06); }
+  body.dark .circle-btn { background: var(--navy-3); color: var(--white); box-shadow: none; }
+  .spacer { width: 44px; flex: none; }
+
+  /* typography */
+  .brand { font-weight: 900; letter-spacing: .5px; font-size: 22px; text-transform: uppercase; line-height: 1; }
+  .brand .q { color: var(--yellow); }
+  .h1 { font-size: 36px; font-weight: 900; line-height: 1.05; letter-spacing: -.6px; margin: 0; }
+  .h1 .hl { color: var(--yellow); }
+  .h1 .alt { color: var(--purple); }
+  .sub { font-size: 16px; line-height: 1.45; margin: 10px 0 0; opacity: .8; }
+  .eyebrow { font-size: 12px; font-weight: 800; letter-spacing: 1.4px; text-transform: uppercase; color: var(--purple); }
+  .label { font-size: 13px; color: var(--muted); font-weight: 600; }
+  .caption { color: var(--muted); font-size: 13px; line-height: 1.45; margin: 10px 0 0; }
+
+  /* cards and rows */
+  .card { background: var(--white); color: var(--ink); border-radius: var(--radius); padding: 18px; margin-bottom: 12px; box-shadow: 0 1px 2px rgba(11,11,34,.05), 0 6px 18px rgba(11,11,34,.04); }
+  .card.tap { cursor: pointer; }
+  .card.tap:active { transform: scale(.985); }
+  .big { font-size: 18px; font-weight: 800; margin-top: 2px; }
+  .row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .row-title { font-weight: 800; font-size: 16px; }
+  .row-sub { color: var(--muted); font-size: 13px; margin-top: 2px; }
+
+  /* controls */
+  .toggle { width: 52px; height: 30px; border-radius: 30px; background: #D9D7E3; position: relative; flex: none; transition: background .2s; }
+  .toggle::after { content: ""; position: absolute; top: 3px; left: 3px; width: 24px; height: 24px; border-radius: 50%; background: #fff; transition: transform .2s; box-shadow: 0 1px 2px rgba(0,0,0,.2); }
+  .toggle.on { background: var(--yellow); }
+  .toggle.on::after { transform: translateX(22px); }
+  .stepper { display: flex; align-items: center; gap: 10px; }
+  .step-btn { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; font-size: 22px; font-weight: 700; background: #F1EFF7; color: var(--ink); transition: transform .1s; }
+  .step-btn.plus { background: var(--yellow); }
+  .step-btn:active { transform: scale(.92); }
+  .step-val { min-width: 26px; text-align: center; font-size: 20px; font-weight: 900; }
+  .seg { display: flex; gap: 8px; margin-top: 14px; }
+  .seg button { flex: 1; padding: 11px 6px; border-radius: 12px; background: #F1EFF7; font-weight: 800; color: var(--ink); transition: background .15s; }
+  .seg button.sel { background: var(--ink); color: var(--white); }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .chip { padding: 7px 12px; border-radius: 999px; background: #F1EFF7; font-size: 13px; font-weight: 700; color: var(--ink); }
+  .chip.yel { background: #FFF1C7; }
+  .chip-btn { padding: 8px 14px; border-radius: 999px; background: var(--ink); color: var(--white); font-size: 13px; font-weight: 800; }
+  .link-chip { padding: 8px 12px; border-radius: 999px; background: var(--purple-soft); color: var(--purple); font-size: 13px; font-weight: 800; }
+  .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--purple); margin-right: 6px; }
+
+  .btn {
+    width: 100%; min-height: 58px; padding: 16px 20px; border-radius: 18px;
+    background: var(--yellow); color: var(--ink); font-weight: 900; font-size: 17px;
+    box-shadow: 0 6px 0 #E0A712; transition: transform .08s, box-shadow .08s, background .15s;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .btn:active:not(:disabled) { transform: translateY(4px); box-shadow: 0 2px 0 #E0A712; }
+  .btn:disabled { box-shadow: none; }
+  .btn.dark { background: var(--ink); color: var(--white); box-shadow: 0 6px 0 #000; }
+  .btn.dark:active:not(:disabled) { box-shadow: 0 2px 0 #000; }
+  .btn.ghost { background: transparent; color: inherit; box-shadow: none; border: 1.5px solid currentColor; opacity: .85; }
+  body:not(.dark) .btn.ghost { border-color: #CFCBDC; color: var(--ink); }
+  .btn.ghost:active:not(:disabled) { transform: scale(.98); box-shadow: none; }
+  .btn-stack { margin-top: auto; padding-top: 18px; display: flex; flex-direction: column; gap: 12px; }
+
+  /* home */
+  .home { display: flex; flex-direction: column; flex: 1; text-align: center; padding-top: 6px; }
+  .home .brand { margin-top: 10px; font-size: 34px; }
+  .home .hero { margin: 14px auto 0; width: 230px; height: 200px; }
+  .home .h1 { font-size: 42px; margin-top: 6px; }
+  .home .sub { max-width: 300px; margin-left: auto; margin-right: auto; }
+  .home .btn-stack { margin-top: auto; }
+  .word-count { font-size: 12px; font-weight: 700; color: rgba(255,255,255,.55); margin-top: 16px; }
+
+  /* setup */
+  .setup-hero { margin: 8px 0 18px; }
+  .setup-card { display: flex; flex-direction: column; gap: 12px; }
+
+  /* categories */
+  .cat-row { display: flex; align-items: center; gap: 14px; padding: 14px 16px; margin-bottom: 10px; border-radius: 16px; background: var(--white); cursor: pointer; border: 2px solid transparent; box-shadow: 0 1px 2px rgba(11,11,34,.04); transition: border-color .15s, background .15s; }
+  .cat-row.on { border-color: var(--yellow); background: #FFFBEF; }
+  .cat-row:active { transform: scale(.99); }
+  .cat-emoji { width: 42px; height: 42px; border-radius: 12px; background: #F1EFF7; display: grid; place-items: center; font-size: 22px; flex: none; }
+  .cat-row.on .cat-emoji { background: var(--yellow); }
+  .cat-name { font-weight: 800; font-size: 16px; }
+  .cat-count { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .check { margin-left: auto; width: 26px; height: 26px; border-radius: 50%; border: 2px solid #D9D7E3; display: grid; place-items: center; font-size: 14px; font-weight: 900; flex: none; color: var(--ink); }
+  .check.on { background: var(--yellow); border-color: var(--yellow); }
+  .cat-list { flex: 1; }
+
+  /* handover */
+  .handover { flex: 1; display: flex; flex-direction: column; text-align: center; }
+  .handover .name { font-size: 40px; font-weight: 900; color: var(--purple); margin-top: 22px; text-transform: uppercase; letter-spacing: .5px; line-height: 1.05; word-break: break-word; }
+  .handover .pass-text { font-size: 22px; font-weight: 700; line-height: 1.3; margin-top: 6px; }
+  .phone-art { margin: 22px auto 6px; width: 240px; height: 190px; }
+  .notice { display: flex; align-items: center; gap: 12px; text-align: left; background: var(--navy-2); border: 1px solid var(--navy-3); border-radius: 16px; padding: 14px; font-size: 14px; line-height: 1.4; color: rgba(255,255,255,.85); margin-top: 12px; }
+  .notice svg { flex: none; }
+
+  /* reveal */
+  .reveal-stage { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 14px; padding-top: 8px; }
+  .stage-label { text-align: center; font-size: 14px; font-weight: 700; color: rgba(255,255,255,.7); }
+  .stage-label b { color: var(--white); }
+  .word-label { text-align: center; color: var(--purple); font-weight: 900; font-size: 14px; letter-spacing: 1.6px; text-transform: uppercase; }
+  .role-card { border-radius: 26px; padding: 30px 22px; text-align: center; min-height: 300px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; position: relative; overflow: hidden; }
+  .role-card.hidden { background: var(--navy-2); border: 2px dashed #3B3B77; color: var(--white); }
+  .role-card.word { background: var(--white); color: var(--ink); box-shadow: 0 0 0 6px rgba(255,201,54,.18), 0 18px 40px rgba(0,0,0,.35); }
+  .role-card.imp { background: linear-gradient(170deg, var(--crimson-2) 0%, var(--crimson) 100%); color: var(--white); box-shadow: 0 18px 40px rgba(179,18,46,.35); }
+  .role-who { font-size: 13px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; opacity: .7; }
+  .word-cat { font-size: 13px; font-weight: 700; color: var(--purple); background: var(--purple-soft); padding: 6px 12px; border-radius: 999px; }
+  .word-big { font-size: 46px; font-weight: 900; letter-spacing: -.5px; line-height: 1.05; word-break: break-word; }
+  .imp-title { font-size: 34px; font-weight: 900; line-height: 1.05; text-transform: uppercase; }
+  .hint-box { width: 100%; background: rgba(11,11,34,.35); border: 1px solid rgba(255,255,255,.2); border-radius: 18px; padding: 14px; margin-top: 6px; }
+  .hint-box .k { font-size: 12px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; color: rgba(255,255,255,.8); }
+  .hint-box .v { font-size: 30px; font-weight: 900; color: var(--yellow); margin-top: 4px; word-break: break-word; }
+  .imp-plain { font-size: 16px; line-height: 1.45; max-width: 280px; }
+  .hold-pill { margin-top: 10px; font-size: 12px; font-weight: 800; letter-spacing: 1.2px; padding: 9px 14px; border-radius: 999px; background: var(--yellow); color: var(--ink); }
+  .role-card.hidden .hold-pill { background: var(--yellow); }
+  .eye-ico { width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; background: var(--navy-3); font-size: 26px; }
+  .privacy { display: flex; gap: 12px; align-items: center; justify-content: center; font-size: 14px; color: rgba(255,255,255,.85); background: var(--navy-2); border: 1px solid var(--navy-3); padding: 12px 14px; border-radius: 16px; text-align: left; margin-top: 4px; }
+  .imp-tip { text-align: center; font-size: 14px; color: rgba(255,255,255,.8); background: rgba(179,18,46,.14); border: 1px solid rgba(224,51,79,.35); padding: 12px 14px; border-radius: 16px; line-height: 1.45; margin-top: 4px; }
+
+  /* talk */
+  .talk-card { background: var(--white); border-radius: 26px; padding: 26px 22px; text-align: center; box-shadow: 0 1px 2px rgba(11,11,34,.05), 0 10px 30px rgba(11,11,34,.06); }
+  .avatar { width: 84px; height: 84px; border-radius: 50%; margin: 0 auto; display: grid; place-items: center; font-size: 34px; font-weight: 900; color: var(--ink); background: var(--yellow); box-shadow: 0 0 0 6px #FFF4D0; }
+  .speaker { font-size: 26px; font-weight: 900; margin-top: 14px; word-break: break-word; }
+  .talk-line { font-size: 16px; font-weight: 700; color: var(--muted); margin-top: 2px; }
+  .timer { position: relative; width: 170px; height: 170px; margin: 18px auto 4px; }
+  .timer svg { display: block; }
+  .timer .num { position: absolute; inset: 0; display: grid; place-items: center; font-size: 46px; font-weight: 900; }
+  .pill-soft { display: inline-block; margin-top: 4px; background: #FFE3E8; color: var(--crimson); font-weight: 800; padding: 8px 14px; border-radius: 999px; font-size: 13px; }
+
+  /* result */
+  .fake-h { font-size: 34px; font-weight: 900; line-height: 1.05; margin: 8px 0 0; letter-spacing: -.4px; }
+  .fake-h .alt { color: var(--purple); }
+  .player-card { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 16px; background: var(--white); margin-bottom: 10px; box-shadow: 0 1px 2px rgba(11,11,34,.04); }
+  .player-card .pa { width: 42px; height: 42px; border-radius: 50%; background: #F1EFF7; display: grid; place-items: center; font-weight: 900; flex: none; }
+  .player-card .pn { font-weight: 800; font-size: 16px; flex: 1; word-break: break-word; }
+  .player-card.imp { background: #FFF4D0; box-shadow: inset 0 0 0 2px var(--yellow); }
+  .player-card.imp .pa { background: var(--yellow); }
+  .tag-imp { font-size: 11px; font-weight: 900; letter-spacing: 1px; text-transform: uppercase; background: var(--ink); color: var(--yellow); padding: 6px 10px; border-radius: 999px; }
+  .info-card { background: var(--ink); color: var(--white); border-radius: 22px; padding: 18px; margin-top: 6px; text-align: center; }
+  .info-card .k { font-size: 12px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; color: var(--yellow); }
+  .info-card .v { font-size: 28px; font-weight: 900; margin-top: 6px; }
+  .info-card .c { font-size: 13px; color: rgba(255,255,255,.7); margin-top: 6px; }
+
+  /* modal */
+  .modal-bg { position: fixed; inset: 0; background: rgba(11,11,34,.6); display: flex; align-items: flex-end; justify-content: center; z-index: 20; padding: 12px; }
+  .modal { width: 100%; max-width: 480px; background: var(--white); color: var(--ink); border-radius: 26px 26px 20px 20px; padding: 22px 20px calc(env(safe-area-inset-bottom) + 20px); max-height: 86vh; overflow: auto; }
+  .modal .big { font-size: 22px; }
+  .modal .player-row { display: flex; gap: 8px; margin-top: 10px; align-items: center; }
+  .modal .player-row input { flex: 1; }
+  .modal ol, .modal ul { padding-left: 20px; line-height: 1.55; font-size: 15px; margin: 10px 0 0; }
+  .modal li { margin-bottom: 6px; }
+  .modal .foot { margin-top: 18px; }
+  .icon-btn { width: 44px; height: 44px; border-radius: 12px; background: #F1EFF7; font-size: 22px; font-weight: 700; flex: none; }
+
+  .toast { position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom) + 24px); transform: translateX(-50%); background: var(--ink); color: var(--white); padding: 12px 18px; border-radius: 999px; font-size: 14px; font-weight: 700; box-shadow: 0 10px 30px rgba(0,0,0,.25); z-index: 30; max-width: 90vw; text-align: center; animation: pop .25s ease; }
+  @keyframes pop { from { opacity: 0; transform: translate(-50%, 8px); } to { opacity: 1; transform: translate(-50%, 0); } }
+  .fade-in { animation: fade .25s ease; }
+  @keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  .hero-float { animation: float 4s ease-in-out infinite; }
+  @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+  }
+  @media (max-width: 360px) {
+    .h1 { font-size: 30px; } .home .h1 { font-size: 36px; }
+    .word-big { font-size: 38px; } .handover .name { font-size: 32px; }
+    .role-card { min-height: 260px; padding: 24px 16px; }
+    #app { padding-left: 16px; padding-right: 16px; }
+  }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+(() => {
+"use strict";
+
+/* ============================================================
+   CONTENT — each entry: {w: word, h: indirect hint}
+   ============================================================ */
+const CATEGORIES = [
+  { id: "food", name: "Food & Drinks", emoji: "🍛", words: [
+    {w:"Rooh Afza",h:"Pink drink"},{w:"Kaju Katli",h:"Bonus"},{w:"Pakora",h:"Monsoon"},{w:"Aam Papad",h:"Nostalgic"},{w:"Chai",h:"Adrak"},
+    {w:"Gulab Jamun",h:"Rose water"},{w:"Chilli Potato",h:"Finger"},{w:"Jalebi",h:"Orange swirl"},{w:"Bread Pakora",h:"Right angle triangle"},{w:"Kachori",h:"Dal filling"},{w:"Kurkure",h:"Crunch"},{w:"Maggi",h:"Time saver"},{w:"Masala Dosa",h:"Potato filling"},{w:"Chicken Biryani",h:"Hyderabad"},{w:"Kiss Me Toffee",h:"Romantic"},
+    {w:"Kheer",h:"Soorya ka vansh"},{w:"Biryani",h:"Hyderabad"},
+    {w:"Paneer",h:"White Eraser"},{w:"Shikanji",h:"Pink Salt"},{w:"Kulfi",h:"Stick"},{w:"Egg",h:"Avocado Brother"},{w:"Cornflakes",h:"Crunchy"},
+    {w:"Aloo Paratha",h:"Stuffing"},{w:"Rasgulla",h:"Snow Ball"},{w:"Chole Bhature",h:"Delhi"},{w:"Bhel Puri",h:"Chakna"},
+    {w:"Hari Mirch",h:"Water"},{w:"Momo",h:"Water vapour"},{w:"Lollipop",h:"Lick"},{w:"Paratha",h:"Different variations"},
+    {w:"Rajma Chawal",h:"Sleep inviter"},{w:"Thali",h:"Family Pack"},{w:"Poha",h:"Bhopal"},{w:"Gajar Halwa",h:"Diabetes"},{w:"Whey Protein",h:"Fuel"},
+    {w:"Momos",h:"Steam"},{w:"Amul",h:"Asli/Real"},{w:"Idli",h:"White Moon"},{w:"Limca",h:"White Petrol"},{w:"Horlicks",h:"Liliputians"},
+    {w:"Parle-G",h:"Puppy"},{w:"Lays",h:"Potato"},{w:"Glucon-D",h:"Sun Straw"},{w:"Lassi",h:"Thick"},{w:"Golgappe",h:"Bhaya"},{w:"Pav Bhaji",h:"Butter"},
+    {w:"Water",h:"Essential"},{w:"Thums Up",h:"Black Water"},{w:"Milk",h:"Bones"},
+    {w:"Aloo Gobi",h:"Dry sabzi"},{w:"Tofu",h:"Gym"},
+    {w:"Pizza",h:"Alloy Wheel"}
+  ]},
+  { id: "animals", name: "Animals", emoji: "🦁", words: [
+    {w:"Lion",h:"Pride"},{w:"Elephant",h:"Bulldozer"},{w:"Kangaroo",h:"Boxing"},{w:"Giraffe",h:"Burj Khalifa"},
+    {w:"Octopus",h:"Ink"},{w:"Peacock",h:"Dance"},{w:"Tiger",h:"Camouflage"},{w:"Monkey",h:"Naughty"},{w:"Camel",h:"Storage"},
+    {w:"Dolphin",h:"Flipper"},{w:"Snake",h:"Poison"},{w:"Owl",h:"360"},{w:"Zebra",h:"Road cross"},
+    {w:"Crocodile",h:"Snapping"},{w:"Koala",h:"Sleepy"},{w:"Bee",h:"Pin"},{w:"Parrot",h:"Gossip"},{w:"Horse",h:"Mustang"},
+    {w:"Cow",h:"Amul"},{w:"Frog",h:"Kermit"},{w:"Shark",h:"Jaws"},{w:"Penguin",h:"Waiter"},{w:"Hippo",h:"Zoo"},{w:"Eagle",h:"Talons"},
+    {w:"Butterfly",h:"Colours"},{w:"Bat",h:"Vampire"},{w:"Panda",h:"Lazy"},{w:"Chameleon",h:"Tongue"},{w:"Dog",h:"Army"},{w:"Cat",h:"Attitude"},
+    {w:"Pig",h:"SPA"},
+    {w:"Turtle",h:"Loading"},
+    {w:"Bear",h:"Mountain Camping"},
+    {w:"Rabbit",h:"Playboy"},
+    {w:"Fox",h:"Detective"},
+    {w:"Sheep",h:"Shawn"},
+    {w:"Goat",h:"Greatest"},
+    {w:"Donkey",h:"Camper"},
+    {w:"Deer",h:"Jail"},
+    {w:"Wolf",h:"Intelligent"},
+    {w:"Mouse",h:"Hole"},
+    {w:"Rat",h:"Underground"},
+    {w:"Duck",h:"Swimming Pool"},
+    {w:"Chicken",h:"Party"},
+    {w:"Ant",h:"Goal Focused"},
+    {w:"Spider",h:"Corner"},
+    {w:"Whale",h:"Friendly"},
+    {w:"Squirrel",h:"Hide & Seek"},
+    {w:"Lizard",h:"Walls"},
+    {w:"Pigeon",h:"Dove"}
+  ]},
+  { id: "sports", name: "Sports", emoji: "⚽", words: [
+    {w:"Football",h:"Kick"},{w:"Basketball",h:"Dunk"},{w:"Tennis",h:"Love"},{w:"Badminton",h:"Rally"},{w:"Hockey",h:"Stick"},
+    {w:"Swimming",h:"Lane"},{w:"Boxing",h:"Bell"},{w:"Wrestling",h:"Dangal"},{w:"Volleyball",h:"Serve"},{w:"Table Tennis",h:"Spin"},
+    {w:"Archery",h:"Robin Hood"},{w:"Golf",h:"Hole in one"},{w:"Marathon",h:"Finish line"},{w:"Yoga",h:"Mat"},{w:"Skating",h:"Glide"},{w:"Rugby",h:"Try"},
+    {w:"Baseball",h:"Diamond"},{w:"Athletics",h:"Track"},{w:"Cycling",h:"Helmet"},{w:"Surfing",h:"Board"},{w:"Skiing",h:"Slope"},
+    {w:"Gymnastics",h:"Balance"},{w:"Judo",h:"Throw"},{w:"Fencing",h:"Musketeers"},{w:"Polo",h:"Mallet"},{w:"Rowing",h:"Boat race"}
+  ]},
+  { id: "bollywood", name: "Bollywood", emoji: "🎬", words: [
+    {w:"Shah Rukh Khan",h:"Badshah"},{w:"Amitabh Bachchan",h:"Angry young man"},{w:"Deepika Padukone",h:"Cocktail"},{w:"3 Idiots",h:"All Is Well"},
+    {w:"Sholay",h:"Gabbar"},{w:"DDLJ",h:"Simran"},{w:"Pathaan",h:"Jhoome"},{w:"Baahubali",h:"Kattappa"},{w:"Salman Khan",h:"Dabangg"},
+    {w:"Karan Johar",h:"Koffee"},{w:"Bigg Boss",h:"Housemates"},{w:"Kapil Sharma Show",h:"Chandu"},{w:"Sarabhai",h:"Ba"},
+    {w:"Mirzapur",h:"Guddu"},{w:"The Family Man",h:"Srikant"},{w:"Panchayat",h:"Phulera"},{w:"Sacred Games",h:"Cuss"},
+    {w:"Antakshari",h:"Sing along"},{w:"KBC",h:"Lifeline"},{w:"Rang De Basanti",h:"India Gate"},{w:"Dangal",h:"Papa"},
+    {w:"Dilwale",h:"Kajol"},{w:"Gully Boy",h:"Ranveer"},{w:"Lagaan",h:"Bhuvan"},{w:"Hera Pheri",h:"Paisa Hit"},
+    {w:"Golmaal",h:"Ajay Devgn"},{w:"Chak De India",h:"Coach"},{w:"Kuch Kuch Hota Hai",h:"Tina"}
+  ]},
+  { id: "cricket", name: "Cricket", emoji: "🏏", words: [
+    {w:"Virat Kohli",h:"Aggression"},{w:"Sachin Tendulkar",h:"Little master"},{w:"MS Dhoni",h:"Helicopter"},{w:"IPL",h:"Orange Cap"},
+    {w:"Yorker",h:"Batsman's toes"},{w:"Cover Drive",h:"Elegant"},{w:"World Cup",h:"Silverware"},{w:"Mumbai Indians",h:"Blue"},
+    {w:"CSK",h:"Yellow"},{w:"Googly",h:"Spin"},{w:"Bouncer",h:"Helmet"},{w:"Hat-trick",h:"Three wickets"},{w:"Gully",h:"Field spot"},
+    {w:"Pitch",h:"Crease"},{w:"Stumps",h:"Bails"},{w:"Test Match",h:"Whites"},{w:"Power Play",h:"Overs"},
+    {w:"Super Over",h:"Decider"},{w:"Rohit Sharma",h:"Hitman"},{w:"Jasprit Bumrah",h:"Action"},{w:"Ravindra Jadeja",h:"Sword"}
+  ]},
+  { id: "festivals", name: "Indian Festivals", emoji: "🪔", words: [
+    {w:"Diwali",h:"Lights"},{w:"Holi",h:"Thandai"},{w:"Raksha Bandhan",h:"Thread"},{w:"Eid",h:"Crescent"},{w:"Navratri",h:"Dandiya"},
+    {w:"Onam",h:"Sadhya"},{w:"Lohri",h:"Bonfire"},{w:"Independence Day",h:"Red Fort"},{w:"Ganesh Chaturthi",h:"Modak"},
+    {w:"Pongal",h:"Kolam"},{w:"Karva Chauth",h:"Moon"},{w:"Durga Puja",h:"Pandal"},{w:"Baisakhi",h:"Harvest"},
+    {w:"Bihu",h:"Dhol"},{w:"Makar Sankranti",h:"Kites"}
+  ]},
+  { id: "places", name: "Indian Places", emoji: "🕌", words: [
+    {w:"Taj Mahal",h:"Shah Jahan"},{w:"Gateway of India",h:"Boat"},{w:"India Gate",h:"Lawns"},{w:"Goa",h:"Hangover"},{w:"Jaipur",h:"Pink"},
+    {w:"Kerala",h:"Houseboat"},{w:"Varanasi",h:"Ghats"},{w:"Ladakh",h:"Bike trip"},{w:"Mumbai",h:"Local train"},{w:"Delhi",h:"Traffic"},
+    {w:"Hampi",h:"Boulders"},{w:"Shimla",h:"Mall"},{w:"Rann of Kutch",h:"Salt"},{w:"Darjeeling",h:"Toy train"},{w:"Mysore Palace",h:"Dussehra"},
+    {w:"Golden Temple",h:"Langar"},{w:"Qutub Minar",h:"Rust-proof"},{w:"Hawa Mahal",h:"Breeze"},{w:"Andaman",h:"Coral"},{w:"Rishikesh",h:"Ganga"},
+    {w:"Agra",h:"Taj"},
+    {w:"Kashmir",h:"Snow"},
+    {w:"Manali",h:"Honeymoon"},
+    {w:"Srinagar",h:"Shikara"},
+    {w:"Leh",h:"Monastery"},
+    {w:"Amritsar",h:"Wagah"},
+    {w:"Udaipur",h:"Lakes"},
+    {w:"Kolkata",h:"Rosogolla"},
+    {w:"Bengaluru",h:"Traffic"},
+    {w:"Hyderabad",h:"Biryani"},
+    {w:"Chennai",h:"Filter coffee"},
+    {w:"Lucknow",h:"Kebab"},
+    {w:"Haridwar",h:"Sawan"},
+    {w:"Ooty",h:"Rose garden"},
+    {w:"Mussoorie",h:"Ropeway"},
+    {w:"Nainital",h:"Boating"},
+    {w:"Ayodhya",h:"Diyas"},
+    {w:"Mathura",h:"Butter"},
+    {w:"Vrindavan",h:"Monkeys"},
+    {w:"Jaisalmer",h:"Golden"},
+    {w:"Kanyakumari",h:"Sunrise"},
+    {w:"Coorg",h:"Orange"},
+    {w:"Pune",h:"Oxford"},
+    {w:"Ahmedabad",h:"Kites"},
+    {w:"Jodhpur",h:"Blue"},
+    {w:"Pushkar",h:"Camel"},
+    {w:"Madurai",h:"Jasmine"},
+    {w:"Puri",h:"Sand art"},
+    {w:"Kochi",h:"Fishing nets"},
+    {w:"Gangtok",h:"Momos"},
+    {w:"Indore",h:"Poha"}
+  ]},
+  { id: "superheroes", name: "Superheroes", emoji: "🦸", words: [
+    {w:"Spider-Man",h:"Queens"},{w:"Batman",h:"Gotham"},{w:"Superman",h:"Kryptonite"},{w:"Iron Man",h:"Suit"},{w:"Wonder Woman",h:"Lasso"},
+    {w:"Hulk",h:"Smash"},{w:"Thor",h:"Hammer"},{w:"Captain America",h:"Shield"},{w:"Shaktimaan",h:"Trishul"},{w:"The Flash",h:"Speed"},
+    {w:"Aquaman",h:"Atlantis"},{w:"Black Panther",h:"Wakanda"},{w:"Ant-Man",h:"Shrink"},{w:"Doctor Strange",h:"Cloak"},{w:"Wolverine",h:"Claws"}
+  ]},
+  { id: "transport", name: "Transportation", emoji: "🚗", words: [
+    {w:"Bullet Train",h:"Fast"},{w:"Auto Rickshaw",h:"Meter"},{w:"Metro",h:"Tunnel"},{w:"Airplane",h:"Runway"},{w:"Scooter",h:"Helmet"},
+    {w:"Bicycle",h:"Chain"},{w:"Ship",h:"Anchor"},{w:"Helicopter",h:"Blades"},{w:"Ambulance",h:"Siren"},{w:"Tractor",h:"Farm"},
+    {w:"Tonga",h:"Horse cart"},{w:"Cable Car",h:"Pulley"},{w:"Hot Air Balloon",h:"Burner"},{w:"Submarine",h:"Periscope"},{w:"Taxi",h:"Yellow"},{w:"Bus",h:"Wheels"}
+  ]},
+  { id: "games", name: "Games India Plays", emoji: "🎮", words: [
+    {w:"PUBG",h:"Chicken dinner"},{w:"Free Fire",h:"Booyah"},{w:"Ludo King",h:"Pawn"},{w:"Carrom",h:"Queen"},{w:"GTA",h:"Vice"},
+    {w:"Subway Surfers",h:"Jake"},{w:"Temple Run",h:"Idol"},{w:"Mini Militia",h:"Jetpack"},{w:"Tekken",h:"Combo"},{w:"Candy Crush",h:"Jelly"},
+    {w:"Clash of Clans",h:"Raid"},{w:"Chess",h:"Castling"},{w:"Pitthu",h:"Hide and seek"},{w:"Kho Kho",h:"Pole"},
+    {w:"Kabaddi",h:"Raider"},{w:"Gilli Danda",h:"Lathi"},{w:"Stapu",h:"Chalk"},{w:"Minecraft",h:"Creeper"},{w:"Fortnite",h:"Floss"},
+    {w:"Among Us",h:"Emergency meeting"},{w:"Pac-Man",h:"Ghost"},{w:"Mario",h:"Mushroom"},{w:"Pokemon",h:"Ash Ketchum"},{w:"Angry Birds",h:"Pig"},{w:"Tetris",h:"Blocks"}
+  ]},
+  { id: "music", name: "Music & Bands", emoji: "🎵", words: [
+    {w:"Coldplay",h:"Yellow"},{w:"Arijit Singh",h:"Tum Hi Ho"},{w:"AR Rahman",h:"Jai Ho"},{w:"Beatles",h:"Liverpool"},{w:"Eminem",h:"Slim Shady"},
+    {w:"Taylor Swift",h:"Cardigan"},{w:"Elvis",h:"Graceland"},{w:"Linkin Park",h:"Numb"},{w:"BTS",h:"Army"},{w:"Shakira",h:"Hips Don't Lie"},
+    {w:"Tabla",h:"Pair"},{w:"Sitar",h:"Ravi"},{w:"Guitar",h:"Strings"},{w:"Piano",h:"Keys"},{w:"Violin",h:"Bow"},
+    {w:"Dhol",h:"Stick"},{w:"Flute",h:"Bansuri"},{w:"Saxophone",h:"Reed"}
+  ]},
+  { id: "countries", name: "Countries & Cities", emoji: "🌍", words: [
+    {w:"India",h:"Chai"},{w:"Japan",h:"Cherry blossom"},{w:"Brazil",h:"Neymar"},{w:"Egypt",h:"Nile"},{w:"Paris",h:"Padlock"},
+    {w:"London",h:"Thames"},{w:"New York",h:"Liberty"},{w:"Australia",h:"Down Under"},{w:"Italy",h:"Boot"},{w:"China",h:"Great Wall"},
+    {w:"Canada",h:"Maple"},{w:"Dubai",h:"Burj"},{w:"Russia",h:"Vodka"},{w:"Kenya",h:"Safari"},{w:"Mexico",h:"Sombrero"},
+    {w:"Greece",h:"Olive"},{w:"Thailand",h:"Elephant"},{w:"Singapore",h:"Merlion"}
+  ]},
+  { id: "occupations", name: "Occupations", emoji: "👔", words: [
+    {w:"Doctor",h:"Prescription"},{w:"Teacher",h:"Red pen"},{w:"Pilot",h:"Cockpit"},{w:"Chef",h:"Kitchen"},{w:"Dabbawala",h:"Tiffin"},
+    {w:"Farmer",h:"Harvest"},{w:"Engineer",h:"Bridge"},{w:"Police",h:"Lathi"},{w:"Judge",h:"Gavel"},{w:"Barber",h:"Shave"},
+    {w:"Postman",h:"Mailbag"},{w:"Astronaut",h:"Orbit"},{w:"Plumber",h:"Wrench"},{w:"Driver",h:"Ignition"},{w:"Painter",h:"Canvas"}
+  ]},
+  { id: "everyday", name: "Desi Everyday", emoji: "🏠", words: [
+    {w:"Pressure Cooker",h:"Whistle"},{w:"Ceiling Fan",h:"Summer"},{w:"Matka",h:"Clay pot"},{w:"Charpai",h:"Cot"},{w:"Jhaadu",h:"Broom"},
+    {w:"Mixie",h:"Jar"},{w:"Thermos",h:"Flask"},{w:"Chappal",h:"Sandal"},{w:"Bindi",h:"Forehead"},{w:"Rickshaw",h:"Cycle"},
+    {w:"Tiffin Box",h:"Steel"},{w:"Diya",h:"Wick"},{w:"Kettle",h:"Spout"},{w:"Rangoli",h:"Colours"},{w:"Bucket",h:"Mug"},
+    {w:"Mosquito Net",h:"Canopy"},{w:"Almirah",h:"Wardrobe"},{w:"Geyser",h:"Heater"},{w:"Tubelight",h:"Flicker"},{w:"Cooler",h:"Summer"}
+  ]},
+  { id: "brands", name: "Brands & Logos", emoji: "🏷️", words: [
+    {w:"Nike",h:"Swoosh"},{w:"Apple",h:"Bitten"},{w:"McDonald's",h:"Arches"},{w:"Coca-Cola",h:"Fizz"},{w:"Adidas",h:"Stripes"},
+    {w:"Google",h:"Doodle"},{w:"Amazon",h:"Prime"},{w:"Netflix",h:"Binge"},{w:"Ferrari",h:"Red car"},{w:"Lego",h:"Bricks"},
+    {w:"Pepsi",h:"Blue"},{w:"Starbucks",h:"Frappe"},{w:"Mercedes",h:"Star"},{w:"Puma",h:"Leap"},{w:"Toyota",h:"Fortuner"},
+    {w:"Spotify",h:"Green"},{w:"Instagram",h:"Filter"},{w:"Tata",h:"Salt"},{w:"Maruti",h:"Suzuki"},{w:"Cadbury",h:"Purple"},
+    {w:"Hershey's",h:"Kiss"},{w:"Ikea",h:"Flatpack"},{w:"Samsung",h:"Galaxy"},{w:"Pringles",h:"Tube"}
+  ]},
+  { id: "colours", name: "Colours & Shapes", emoji: "🎨", words: [
+    {w:"Crimson",h:"Lipstick"},{w:"Turquoise",h:"Lagoon"},{w:"Lavender",h:"Soap"},{w:"Maroon",h:"Wine"},{w:"Saffron",h:"Flag"},
+    {w:"Emerald",h:"Green"},{w:"Ivory",h:"Piano"},{w:"Indigo",h:"Jeans"},{w:"Mustard",h:"Yellow"},{w:"Teal",h:"Peacock"},
+    {w:"Hexagon",h:"Honeycomb"},{w:"Triangle",h:"Pizza slice"},{w:"Crescent",h:"Moon"},{w:"Spiral",h:"Staircase"},{w:"Diamond",h:"Engagement"},
+    {w:"Octagon",h:"Stop sign"},{w:"Heart",h:"Valentine"},{w:"Star",h:"Twinkle"},{w:"Oval",h:"Egg"},{w:"Cube",h:"Dice"},{w:"Square",h:"Carrom"}
+  ]},
+  { id: "emotions", name: "Emotions & Feelings", emoji: "😊", words: [
+    {w:"Nostalgia",h:"Old photograph"},{w:"Jealousy",h:"Green-eyed"},{w:"Anxiety",h:"Racing"},{w:"Euphoria",h:"Rue"},{w:"Boredom",h:"Idle"},
+    {w:"Awkward",h:"Silence"},{w:"Heartbreak",h:"Breakup"},{w:"Excitement",h:"Fizz"},{w:"Regret",h:"Yesterday"},{w:"Pride",h:"Lion"},
+    {w:"Gratitude",h:"Thanks"},{w:"Loneliness",h:"Empty"},{w:"Confusion",h:"Maze"},{w:"Suspense",h:"Cliffhanger"},{w:"Shame",h:"Blush"},
+    {w:"Relief",h:"Exhale"},{w:"Surprise",h:"Gasp"},{w:"Calm",h:"Lake"},{w:"Rage",h:"Boil"},{w:"Hope",h:"Dawn"}
+  ]},
+  { id: "hobbies", name: "Hobbies & Activities", emoji: "🎯", words: [
+    {w:"Photography",h:"Shutter"},{w:"Gardening",h:"Seedling"},{w:"Knitting",h:"Two needles"},{w:"Painting",h:"Canvas"},{w:"Cooking",h:"Recipe"},
+    {w:"Trekking",h:"Trail"},{w:"Camping",h:"Tent"},{w:"Fishing",h:"Bait"},{w:"Bird Watching",h:"Binoculars"},{w:"Dancing",h:"Groove"},
+    {w:"Blogging",h:"Post"},{w:"Chess",h:"Castling"},{w:"Origami",h:"Paper"},{w:"Pottery",h:"Wheel"},{w:"Stargazing",h:"Telescope"},
+    {w:"Reading",h:"Bookworm"},{w:"Baking",h:"Oven"},{w:"Jogging",h:"Shoes"},{w:"Swimming",h:"Pool"},{w:"Carpentry",h:"Sawdust"},
+    {w:"Gym",h:"Leg day"}
+  ]},
+  { id: "school", name: "School & Education", emoji: "📚", words: [
+    {w:"Blackboard",h:"Chalk dust"},{w:"Homework",h:"Dog ate it"},{w:"Recess",h:"Break"},{w:"Exam Hall",h:"Hall ticket"},{w:"Library",h:"Silence"},
+    {w:"Canteen",h:"Samosa"},{w:"Principal",h:"Strict"},{w:"Report Card",h:"Parents"},{w:"Geometry Box",h:"Compass"},{w:"Assembly",h:"Anthem"},
+    {w:"Lunch Break",h:"Tiffin"},{w:"Science Lab",h:"Beaker"},{w:"Graduation",h:"Gown"},{w:"Syllabus",h:"Chapters"},{w:"Attendance",h:"Roll call"},
+    {w:"Scholarship",h:"Merit"},{w:"Hostel",h:"Warden"},{w:"Tuition",h:"Coaching"},{w:"Viva",h:"Defence"},{w:"Convocation",h:"Stage"},
+    {w:"Exam",h:"Cheating"}
+  ]},
+  { id: "science", name: "Science & Technology", emoji: "🔬", words: [
+    {w:"Gravity",h:"Apple"},{w:"Photosynthesis",h:"Sunlight"},{w:"Robot",h:"Metal"},{w:"Satellite",h:"Dish TV"},{w:"Laptop",h:"Charger"},
+    {w:"Electron",h:"Atom"},{w:"Vaccine",h:"Injection"},{w:"Rocket",h:"Thrust"},{w:"Microscope",h:"Lens"},{w:"Magnet",h:"Poles"},
+    {w:"Internet",h:"Router"},{w:"Battery",h:"Charge"},{w:"Drone",h:"Propeller"},{w:"Artificial Intelligence",h:"Chatbot"},{w:"Bluetooth",h:"Pairing"},
+    {w:"DNA",h:"Helix"},{w:"Black Hole",h:"Vacuum"},{w:"Telescope",h:"Galaxy"},{w:"Solar Panel",h:"Rooftop"},{w:"Smartphone",h:"Notification"}
+  ]},
+  { id: "weather", name: "Weather & Nature", emoji: "⛈️", words: [
+    {w:"Monsoon",h:"Umbrella"},{w:"Rainbow",h:"Prism"},{w:"Avalanche",h:"Snow"},{w:"Tsunami",h:"Wave"},{w:"Earthquake",h:"Shake"},
+    {w:"Volcano",h:"Lava"},{w:"Thunderstorm",h:"Lightning"},{w:"Fog",h:"Train late"},{w:"Drought",h:"Dry"},{w:"Blizzard",h:"Woollen cap"},
+    {w:"Glacier",h:"Slow"},{w:"Desert",h:"Dune"},{w:"Rainforest",h:"Canopy"},{w:"Tornado",h:"Twister"},{w:"Hailstorm",h:"Ice balls"},
+    {w:"Waterfall",h:"Splash"},{w:"Sunrise",h:"Horizon"},{w:"Mangrove",h:"Roots"},{w:"Oasis",h:"Water"},{w:"Coral Reef",h:"Fish"}
+  ]},
+  { id: "movies", name: "Hollywood Movies", emoji: "🍿", words: [
+    {w:"Titanic",h:"Iceberg"},{w:"Avatar",h:"Blue"},{w:"Jurassic Park",h:"Dinosaur"},{w:"The Matrix",h:"Red pill"},{w:"Inception",h:"Dream"},
+    {w:"Frozen",h:"Let It Go"},{w:"Toy Story",h:"Woody"},{w:"Finding Nemo",h:"Dory"},{w:"Joker",h:"Clown"},{w:"The Lion King",h:"Simba"},
+    {w:"Harry Potter",h:"Platform 9¾"},{w:"Star Wars",h:"Force"},{w:"Interstellar",h:"Wormhole"},{w:"Gladiator",h:"Arena"},{w:"Rocky",h:"Eye of the Tiger"},
+    {w:"Mission Impossible",h:"Mask"},{w:"Home Alone",h:"Burglar"},{w:"Spider-Verse",h:"Multiverse"},{w:"Shrek",h:"Swamp"},{w:"Up",h:"Balloon"},
+    {w:"Money Heist",h:"Bella Ciao"}
+  ]},
+
+  { id: "famous", name: "Famous People", emoji: "🌟", words: [
+    {w:"Will Smith",h:"Slap"},
+    {w:"John Cena",h:"Invisible"},
+    {w:"Lionel Messi",h:"Bakri"},
+    {w:"Cristiano Ronaldo",h:"High Jump"},
+    {w:"Khabib Nurmagomedov",h:"Eagle"},
+    {w:"Virat Kohli",h:"Delhi Vala"},
+    {w:"MS Dhoni",h:"Helicopter"},
+    {w:"Rajat Dalal",h:"4x4"},
+    {w:"Honey Singh",h:"4 Vodka"},
+    {w:"Justin Bieber",h:"Baby baby"},
+    {w:"Shah Rukh Khan",h:"Mannat"},
+    {w:"Amitabh Bachchan",h:"Angry"},
+    {w:"Salman Khan",h:"Bhaijaan"},
+    {w:"Mukesh Ambani",h:"Thick Bro"},
+    {w:"Tiger Shroff",h:"Bandar"},
+    {w:"Dhruv Rathee",h:"Modi's Fan"},
+    {w:"Bhuvan Bham",h:"Multiple Characters"},
+    {w:"Priyanka Chopra",h:"Pardesi"},
+    {w:"Technical Guruji",h:"Smartphones"},
+    {w:"Sandeep Maheshwari",h:"Depression"},
+    {w:"Elvish Yadav",h:"System"},
+    {w:"Eminem",h:"Speed Talk"},
+    {w:"Arijit Singh",h:"Sadness"},
+    {w:"Khan Sir",h:"Cheap Services"},
+    {w:"iShowSpeed",h:"7"},
+    {w:"Shakira",h:"Waka Waka"},
+    {w:"Ed Sheeran",h:"Shaping U"},
+    {w:"Elon Musk",h:"Poorest Man On Earth"},
+    {w:"Puneet Superstar",h:"Hygienic"},
+    {w:"Bill Gates",h:"Window"},
+    {w:"Mark Zuckerberg",h:"Social"},
+    {w:"Ranveer Allahbadia",h:"Beer"},
+    {w:"The Great Khali",h:"Huge"},
+    {w:"Andrew Tate",h:"Bald guy"},
+    {w:"Dan Bilzerian",h:"Girls"},
+    {w:"Vladimir Putin",h:"Discipline"},
+    {w:"Usain Bolt",h:"Fastest"},
+    {w:"Michael Jordan",h:"Jumpman"},
+    {w:"Kim Jong Un",h:"Yamraj"},
+    {w:"Bear Grylls",h:"Urine"},
+    {w:"Dwayne Johnson",h:"Eyebrow"},
+    {w:"Jackie Chan",h:"Drunken Master"},
+    {w:"MrBeast",h:"Feastables"},
+    {w:"Deepak Kalal",h:"System paad denge"},
+    {w:"David Goggins",h:"Endurance"},
+    {w:"Ronnie Coleman",h:"Wheelchair"},
+    {w:"Thanos",h:"Blue"},
+    {w:"Doraemon",h:"Pocket"},
+    {w:"Lawrence Bishnoi",h:"College politics"},
+    {w:"Sunny Leone",h:"Baby Doll"},
+    {w:"Neymar",h:"Trickster"},
+    {w:"Kylie Jenner",h:"Surgery"},
+    {w:"Mike Tyson",h:"Iron Man"},
+    {w:"Narendra Modi",h:"Tapri"},
+    {w:"Tom Cruise",h:"No Fear"}
+  ]},
+];
+
+/* ============================================================
+   STATE
+   ============================================================ */
+const STORE_KEY = "kaunnakli.v3";
+const DEFAULTS = {
+  players: ["Player 1", "Player 2", "Player 3"],
+  imposters: 1,
+  categories: ["food", "animals", "sports", "bollywood", "cricket", "festivals", "places"],
+  timeOn: false,
+  timeSec: 60,
+  hintOn: true,
+};
+function loadSaved() { try { return JSON.parse(localStorage.getItem(STORE_KEY)) || {}; } catch { return {}; } }
+const saved = loadSaved();
+
+const S = {
+  screen: "home",      // home | setup | categories | handover | reveal | talk | final
+  settings: (() => { const x = { ...DEFAULTS, ...(saved.settings || {}) }; delete x.hintLevel; return x; })(),
+  game: null,
+  modal: null,         // "players" | "how" | null
+  toast: "",
+  timerLeft: 0,
+};
+function save() { localStorage.setItem(STORE_KEY, JSON.stringify({ settings: S.settings })); }
+
+/* ============================================================
+   HELPERS
+   ============================================================ */
+const $app = document.getElementById("app");
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const shuffle = arr => { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+const maxImposters = n => Math.max(1, Math.min(3, Math.floor((n - 1) / 2)));
+const initial = s => esc((String(s).trim()[0] || "?").toUpperCase());
+
+const normWord = s => s.toLowerCase().replace(/[^a-z0-9]/g, "");
+
+function selectedWords() {
+  const seen = new Set(); const out = [];
+  for (const c of CATEGORIES) {
+    if (!S.settings.categories.includes(c.id)) continue;
+    for (const e of c.words) {
+      const k = normWord(e.w);
+      if (seen.has(k)) continue;
+      seen.add(k); out.push({ word: e.w, h: e.h, cat: c.name });
+    }
+  }
+  return out;
+}
+
+/* The round hint is the single indirect hint stored on the entry. */
+const roundHint = entry => entry.h;
+
+let toastTimer = null;
+function toast(msg) {
+  S.toast = msg; render();
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { S.toast = ""; render(); }, 1600);
+}
+
+/* ============================================================
+   GAME FLOW
+   Home → Start a game → Setup → Continue
+        → for each player: pass-the-phone → reveal (hold) → hide & pass
+        → Start the game → talk (random starter)
+        → See who's the imposter → result → Play again / Home
+   ============================================================ */
+let timerHandle = null;
+const R = 74, CIRC = 2 * Math.PI * R;
+
+function startGame() {
+  const pool = selectedWords();
+  if (!pool.length) return toast("Pick at least one category");
+  const players = S.settings.players.map(p => p.trim() || "Player");
+  const n = players.length;
+  const impCount = Math.min(S.settings.imposters, maxImposters(n));
+
+  let entry = pick(pool);
+  if (S.game && S.game.word && pool.length > 1) {
+    let guard = 0;
+    while (entry.word === S.game.word && guard++ < 50) entry = pick(pool);
+  }
+  S.game = {
+    players, n,
+    word: entry.word, cat: entry.cat,
+    hint: S.settings.hintOn ? roundHint(entry) : null,
+    imposters: shuffle([...Array(n).keys()]).slice(0, impCount),
+    revealPos: 0, showing: false, seenOnce: false,
+    starter: Math.floor(Math.random() * n),
+  };
+  clearInterval(timerHandle); timerHandle = null;
+  S.screen = "handover";
+  render();
+}
+
+const isImposter = i => S.game.imposters.includes(i);
+
+function nextCard() {
+  const g = S.game;
+  if (g.revealPos >= g.n - 1) {
+    S.screen = "talk";
+    restartTimer();
+  } else {
+    g.revealPos++; g.showing = false; g.seenOnce = false;
+    S.screen = "handover";
+  }
+  render();
+}
+
+function restartTimer() {
+  clearInterval(timerHandle); timerHandle = null;
+  if (!S.settings.timeOn) return;
+  S.timerLeft = S.settings.timeSec;
+  timerHandle = setInterval(() => {
+    S.timerLeft = Math.max(0, S.timerLeft - 1);
+    if (S.timerLeft === 0) { clearInterval(timerHandle); timerHandle = null; }
+    const num = document.getElementById("timer-num");
+    const arc = document.getElementById("timer-arc");
+    if (num) num.textContent = S.timerLeft;
+    if (arc) arc.setAttribute("stroke-dashoffset", String(CIRC * (1 - S.timerLeft / S.settings.timeSec)));
+    const tu = document.getElementById("time-up");
+    if (tu && S.timerLeft === 0) tu.style.display = "inline-block";
+  }, 1000);
+}
+
+function goHome() {
+  clearInterval(timerHandle); timerHandle = null;
+  S.screen = "home"; render();
+}
+
+/* ============================================================
+   RENDER
+   ============================================================ */
+function render() {
+  let html; let dark = false;
+  switch (S.screen) {
+    case "setup": html = renderSetup(); break;
+    case "categories": html = renderCategories(); break;
+    case "handover": html = renderHandover(); dark = true; break;
+    case "reveal": html = renderReveal(); dark = true; break;
+    case "talk": html = renderTalk(); break;
+    case "final": html = renderFinal(); break;
+    default: html = renderHome(); dark = true;
+  }
+  document.body.classList.toggle("dark", dark);
+  let modal = "";
+  if (S.modal === "players") modal = renderPlayersModal();
+  if (S.modal === "how") modal = renderHowModal();
+  $app.innerHTML = html + modal + (S.toast ? `<div class="toast">${esc(S.toast)}</div>` : "");
+}
+
+const LOGO = `<div class="brand">Kaun Nakli<span class="q">?</span></div>`;
+
+const IMPOSTER_SVG = `
+  <svg class="hero hero-float" viewBox="0 0 230 200" aria-hidden="true">
+    <defs><radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#8857F6" stop-opacity=".45"/><stop offset="100%" stop-color="#8857F6" stop-opacity="0"/>
+    </radialGradient></defs>
+    <circle cx="115" cy="110" r="100" fill="url(#glow)"/>
+    <path d="M52 170 Q115 130 178 170 L178 200 L52 200Z" fill="#8857F6"/>
+    <path d="M60 110 Q115 56 170 110 Q180 170 115 176 Q50 170 60 110Z" fill="#0B0B22" stroke="#8857F6" stroke-width="3"/>
+    <path d="M54 102 L176 102 L166 70 Q115 46 64 70Z" fill="#17173A" stroke="#8857F6" stroke-width="3"/>
+    <ellipse cx="90" cy="130" rx="20" ry="22" fill="#fff"/>
+    <ellipse cx="140" cy="130" rx="20" ry="22" fill="#fff"/>
+    <circle cx="95" cy="134" r="10" fill="#0B0B22"/>
+    <circle cx="145" cy="134" r="10" fill="#0B0B22"/>
+    <path d="M100 166 Q115 176 130 166" stroke="#FFC936" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <g stroke="#FFC936" stroke-width="5" stroke-linecap="round">
+      <line x1="26" y1="88" x2="40" y2="96"/><line x1="204" y1="88" x2="190" y2="96"/><line x1="30" y1="130" x2="44" y2="128"/><line x1="200" y1="130" x2="186" y2="128"/>
+    </g>
+  </svg>`;
+
+function renderHome() {
+  const st = S.settings;
+  const n = st.players.length;
+  const pool = selectedWords().length;
+  return `
+    <div class="home fade-in">
+      <div class="top" style="justify-content:center">${LOGO}</div>
+      ${IMPOSTER_SVG}
+      <h1 class="h1">Find the<br><span class="hl">imposter.</span></h1>
+      <p class="sub">One word each. One fake. Can you spot them?</p>
+      <div class="btn-stack">
+        <button class="btn" data-act="goSetup">Start a game →</button>
+        <button class="btn ghost" data-act="openHow">How to play</button>
+      </div>
+      <div class="word-count">${pool} words ready · ${n} players</div>
+    </div>`;
+}
+
+function renderSetup() {
+  const st = S.settings;
+  const n = st.players.length;
+  const mx = maxImposters(n);
+  const shownImp = Math.min(st.imposters, mx);
+  const pool = selectedWords().length;
+  const catNames = CATEGORIES.filter(c => st.categories.includes(c.id));
+  const canContinue = pool > 0 && n >= 3;
+
+  return `
+    <div class="fade-in">
+      <div class="top">
+        <button class="circle-btn" data-act="goHome" aria-label="Back">←</button>
+        <div class="top-title">Set up your game</div>
+        <span class="spacer"></span>
+      </div>
+      <div class="setup-hero">
+        <h2 class="h1" style="font-size:30px">Make it yours<span class="alt">.</span></h2>
+        <p class="sub" style="opacity:.7">A few quick choices, then pass the phone.</p>
+      </div>
+
+      <div class="card">
+        <div class="row">
+          <div><div class="row-title">Players</div><div class="row-sub">How many people are playing?</div></div>
+          <div class="stepper">
+            <button class="step-btn" data-act="step" data-k="players" data-d="-1" ${n <= 3 ? "disabled" : ""} aria-label="Fewer players">−</button>
+            <span class="step-val">${n}</span>
+            <button class="step-btn plus" data-act="step" data-k="players" data-d="1" ${n >= 16 ? "disabled" : ""} aria-label="More players">+</button>
+          </div>
+        </div>
+        <div class="row" style="margin-top:6px">
+          <span class="label">${st.players.map(p => esc(p)).slice(0, 4).join(", ")}${n > 4 ? "…" : ""}</span>
+          <button class="link-chip" data-act="openPlayers">Edit names</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="row">
+          <div><div class="row-title">Imposters</div><div class="row-sub">How many people are fake?</div></div>
+          <div class="stepper">
+            <button class="step-btn" data-act="step" data-k="imps" data-d="-1" ${shownImp <= 1 ? "disabled" : ""} aria-label="Fewer imposters">−</button>
+            <span class="step-val">${shownImp}</span>
+            <button class="step-btn plus" data-act="step" data-k="imps" data-d="1" ${shownImp >= mx ? "disabled" : ""} aria-label="More imposters">+</button>
+          </div>
+        </div>
+        ${mx > 1 ? "" : `<p class="caption">Only 1 imposter is possible with ${n} players.</p>`}
+      </div>
+
+      <div class="card">
+        <div class="row">
+          <div><div class="row-title">Time limit</div><div class="row-sub">${st.timeOn ? st.timeSec + " seconds for talk" : "Off"}</div></div>
+          <div class="toggle ${st.timeOn ? "on" : ""}" data-act="toggleTime" role="switch" aria-checked="${st.timeOn}"></div>
+        </div>
+        ${st.timeOn ? `<div class="seg">${[30, 60, 90].map(s => `<button class="${st.timeSec === s ? "sel" : ""}" data-act="setTime" data-v="${s}">${s}s</button>`).join("")}</div>` : ""}
+      </div>
+
+      <div class="card">
+        <div class="row">
+          <div><div class="row-title">Imposter hint</div><div class="row-sub">${st.hintOn ? "On" : "Off"}</div></div>
+          <div class="toggle ${st.hintOn ? "on" : ""}" data-act="toggleHint" role="switch" aria-checked="${st.hintOn}"></div>
+        </div>
+        <p class="caption">Shows the imposter one indirect clue about the secret word.</p>
+      </div>
+
+      <div class="card">
+        <div class="row">
+          <div><div class="row-title">Categories</div><div class="row-sub">${st.categories.length} selected</div></div>
+          <button class="chip-btn" data-act="openCategories">Change</button>
+        </div>
+        <div class="chips">${catNames.map(c => `<span class="chip yel">${c.emoji} ${esc(c.name)}</span>`).join("") || `<span class="caption" style="margin:0">None selected. Tap Change to pick some.</span>`}</div>
+      </div>
+
+      <div class="btn-stack">
+        <button class="btn" data-act="continue" ${canContinue ? "" : "disabled"}>Continue →</button>
+      </div>
+    </div>`;
+}
+
+function renderCategories() {
+  const st = S.settings;
+  const allOn = st.categories.length === CATEGORIES.length;
+  return `
+    <div class="fade-in">
+      <div class="top">
+        <button class="circle-btn" data-act="goSetup" aria-label="Back">←</button>
+        <div class="top-title">Categories</div>
+        <button class="chip-btn" data-act="allCats" style="padding:8px 12px">${allOn ? "Clear" : "All"}</button>
+      </div>
+      <div style="margin:12px 0 18px">
+        <h2 class="h1" style="font-size:30px">Pick your<br><span class="alt">topics.</span></h2>
+        <p class="sub" style="opacity:.7">The secret word comes from all selected categories.</p>
+      </div>
+      <div class="cat-list">
+      ${CATEGORIES.map(c => {
+        const on = st.categories.includes(c.id);
+        return `<div class="cat-row ${on ? "on" : ""}" data-act="toggleCat" data-id="${c.id}" role="checkbox" aria-checked="${on}">
+          <div class="cat-emoji">${c.emoji}</div>
+          <div><div class="cat-name">${esc(c.name)}</div><div class="cat-count">${c.words.length} words</div></div>
+          <div class="check ${on ? "on" : ""}">${on ? "✓" : ""}</div>
+        </div>`;
+      }).join("")}
+      </div>
+      <div class="btn-stack">
+        <button class="btn dark" data-act="goSetup" ${st.categories.length ? "" : "disabled"}>Done (${st.categories.length} selected)</button>
+      </div>
+    </div>`;
+}
+
+const PHONE_SVG = `
+  <svg class="phone-art" viewBox="0 0 240 190" aria-hidden="true">
+    <path d="M10 150 Q40 110 66 132 L70 170 Q40 186 10 176Z" fill="#8857F6" opacity=".95"/>
+    <path d="M230 150 Q200 110 174 132 L170 170 Q200 186 230 176Z" fill="#FFC936"/>
+    <rect x="80" y="20" width="80" height="140" rx="16" fill="#23235A" stroke="#8857F6" stroke-width="4" transform="rotate(-8 120 90)"/>
+    <rect x="92" y="36" width="56" height="106" rx="8" fill="#17173A" transform="rotate(-8 120 90)"/>
+    <ellipse cx="120" cy="92" rx="18" ry="11" fill="none" stroke="#FFC936" stroke-width="4" transform="rotate(-8 120 90)"/>
+    <circle cx="120" cy="92" r="5" fill="#FFC936" transform="rotate(-8 120 90)"/>
+    <g stroke="#FFC936" stroke-width="4" stroke-linecap="round"><line x1="46" y1="62" x2="60" y2="74"/><line x1="200" y1="62" x2="186" y2="74"/><line x1="206" y1="110" x2="190" y2="110"/></g>
+  </svg>`;
+
+function renderHandover() {
+  const g = S.game;
+  const i = g.revealPos;
+  const last = i === g.n - 1;
+  return `
+    <div class="handover fade-in">
+      <div class="top">
+        <button class="circle-btn" data-act="goHome" aria-label="Quit">✕</button>
+        <div class="brand" style="font-size:16px">Kaun Nakli<span class="q">?</span></div>
+        <span class="spacer"></span>
+      </div>
+      <div class="eyebrow" style="margin-top:14px">Player ${i + 1} of ${g.n}</div>
+      <div class="name">${esc(g.players[i])}</div>
+      <div class="pass-text">Pass the phone to ${last ? "the next player" : "the next player"}</div>
+      ${PHONE_SVG}
+      <div class="notice">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFC936" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+        <span>Each player will see their word privately. Don't show it to others!</span>
+      </div>
+      <div class="btn-stack">
+        <button class="btn" data-act="showReveal">Reveal my word</button>
+      </div>
+    </div>`;
+}
+
+function renderReveal() {
+  const g = S.game;
+  const i = g.revealPos;
+  const imp = isImposter(i);
+  const last = i === g.n - 1;
+  const btnLabel = last ? "Start the game" : (imp ? "Got it" : "Hide word & pass phone");
+  let card;
+  if (!g.showing) {
+    card = `<div class="role-card hidden unselectable" data-hold>
+        <div class="eye-ico">👆</div>
+        <div class="role-who">${esc(g.players[i])}</div>
+        <div class="big" style="font-size:24px">Press and hold</div>
+        <div class="row-sub" style="color:rgba(255,255,255,.7)">to see your word</div>
+        <div class="hold-pill">HOLD TO REVEAL</div>
+      </div>`;
+  } else if (imp) {
+    card = `<div class="role-card imp unselectable" data-hold>
+        <div class="role-who">${esc(g.players[i])}</div>
+        <div class="imp-title">You're the<br>imposter</div>
+        ${g.hint
+          ? `<div class="hint-box"><div class="k">💡 Hint</div><div class="v">${esc(g.hint)}</div></div>`
+          : `<div class="imp-plain">No hint this round. Pretend you know the word. Listen carefully!</div>`}
+        <div class="hold-pill" style="background:var(--ink);color:#fff">LET GO TO HIDE</div>
+      </div>`;
+  } else {
+    card = `<div class="role-card word unselectable" data-hold>
+        <div class="role-who" style="color:var(--muted)">${esc(g.players[i])}</div>
+        <div class="word-cat">${esc(g.cat)}</div>
+        <div class="word-big">${esc(g.word)}</div>
+        <div class="hold-pill">LET GO TO HIDE</div>
+      </div>`;
+  }
+  const label = imp ? "" : `<div class="word-label">Your word is</div>`;
+  const tip = !g.showing
+    ? `<div class="privacy"><span>🔒</span><span>Keep the phone close. Nobody else should see this.</span></div>`
+    : imp
+      ? `<div class="imp-tip">Act natural and try to blend in with the others!</div>`
+      : `<div class="privacy"><span>🔒</span><span>Remember your word. Don't show anyone.</span></div>`;
+  return `
+    <div class="reveal-stage fade-in" style="flex:1">
+      <div class="stage-label">Player ${i + 1} of ${g.n}</div>
+      ${label}
+      <div class="role-wrap">${card}</div>
+      ${tip}
+    </div>
+    <div class="btn-stack">
+      <button class="btn ${last ? "dark" : ""}" data-act="nextCard" ${g.seenOnce ? "" : "disabled"}>${btnLabel}</button>
+    </div>`;
+}
+
+function renderTalk() {
+  const g = S.game;
+  const starter = g.players[g.starter];
+  const timerHtml = S.settings.timeOn ? `
+    <div class="timer">
+      <svg width="170" height="170" viewBox="0 0 170 170">
+        <circle cx="85" cy="85" r="${R}" fill="none" stroke="#E7E4EE" stroke-width="10"/>
+        <circle id="timer-arc" cx="85" cy="85" r="${R}" fill="none" stroke="#0B0B22" stroke-width="10"
+          stroke-linecap="round" stroke-dasharray="${CIRC}" stroke-dashoffset="${CIRC * (1 - S.timerLeft / S.settings.timeSec)}" transform="rotate(-90 85 85)"/>
+      </svg>
+      <div class="num" id="timer-num">${S.timerLeft}</div>
+    </div>
+    <div id="time-up" class="pill-soft" style="display:${S.timerLeft === 0 ? "inline-block" : "none"}">Time's up!</div>` : "";
+  return `
+    <div class="fade-in" style="display:flex;flex-direction:column;flex:1">
+      <div class="top">
+        <button class="circle-btn" data-act="goHome" aria-label="Quit">✕</button>
+        <div class="top-title">Talk time</div>
+        <span class="spacer"></span>
+      </div>
+      <div style="margin-top:16px">
+        <div class="talk-card">
+          <div class="avatar">${initial(starter)}</div>
+          <div class="speaker">${esc(starter)}</div>
+          <div class="talk-line">will start the conversation</div>
+          <p class="sub" style="color:var(--muted);opacity:1;font-size:14px;max-width:280px;margin:12px auto 0">Each person says one word about the secret word. Imposters, blend in!</p>
+          ${timerHtml}
+        </div>
+      </div>
+      <div class="btn-stack">
+        <button class="btn" data-act="reveal">See who's the imposter</button>
+        <button class="btn ghost" data-act="goHome">New game</button>
+      </div>
+    </div>`;
+}
+
+function renderFinal() {
+  const g = S.game;
+  const impSet = new Set(g.imposters);
+  return `
+    <div class="fade-in">
+      <div class="top">
+        <button class="circle-btn" data-act="goHome" aria-label="Back">←</button>
+        <div class="top-title">The reveal</div>
+        <span class="spacer"></span>
+      </div>
+      <h2 class="fake-h" style="margin-top:12px">Time to find<br>the <span class="alt">fake</span></h2>
+      <p class="sub" style="color:var(--muted);opacity:1;font-size:15px">${g.imposters.length > 1 ? "The imposters were highlighted below." : "The imposter is highlighted below."}</p>
+      <div style="margin-top:16px">
+        ${g.players.map((p, i) => `
+          <div class="player-card ${impSet.has(i) ? "imp" : ""}">
+            <div class="pa">${initial(p)}</div>
+            <div class="pn">${esc(p)}</div>
+            ${impSet.has(i) ? `<span class="tag-imp">Imposter</span>` : ""}
+          </div>`).join("")}
+      </div>
+      <div class="info-card">
+        <div class="k">The secret word</div>
+        <div class="v">${esc(g.word)}</div>
+        <div class="c">Category: ${esc(g.cat)}</div>
+      </div>
+      <div class="btn-stack">
+        <button class="btn" data-act="start">Play again</button>
+        <button class="btn ghost" data-act="goHome">Back to home</button>
+      </div>
+    </div>`;
+}
+
+function renderPlayersModal() {
+  const st = S.settings;
+  const rows = st.players.map((p, i) => `
+    <div class="player-row">
+      <input data-input="player" data-i="${i}" value="${esc(p)}" maxlength="18" />
+      <button class="icon-btn" data-act="removePlayer" data-i="${i}" ${st.players.length <= 3 ? "disabled" : ""} aria-label="Remove">−</button>
+    </div>`).join("");
+  return `
+  <div class="modal-bg" data-act="closeModal">
+    <div class="modal">
+      <div class="row"><div class="big">Players</div><span class="label">${st.players.length}/16</span></div>
+      <p class="caption">Minimum 3, maximum 16.</p>
+      ${rows}
+      <button class="btn ghost" data-act="addPlayer" style="margin-top:12px;color:var(--ink)" ${st.players.length >= 16 ? "disabled" : ""}>+ Add player</button>
+      <div class="foot"><button class="btn dark" data-act="closeModal">Done</button></div>
+    </div>
+  </div>`;
+}
+
+function renderHowModal() {
+  return `
+  <div class="modal-bg" data-act="closeModal">
+    <div class="modal">
+      <div class="row"><div class="big">How to play</div><button class="circle-btn" data-act="closeModal" aria-label="Close" style="width:36px;height:36px">✕</button></div>
+      <ol>
+        <li>Everyone gets one secret word, except the imposter(s).</li>
+        <li>Pass the phone. Press and hold to see your word, then let go before passing.</li>
+        <li>The imposter sees a short indirect hint, if hints are on.</li>
+        <li>Talk: each person says one word about the secret word. Imposters try to blend in.</li>
+        <li>Tap "See who's the imposter" to reveal the fake.</li>
+      </ol>
+      <div class="foot"><button class="btn dark" data-act="closeModal">Got it</button></div>
+    </div>
+  </div>`;
+}
+
+/* ============================================================
+   EVENTS
+   ============================================================ */
+$app.addEventListener("click", e => {
+  const el = e.target.closest("[data-act]");
+  if (!el) return;
+  const act = el.dataset.act;
+  const st = S.settings;
+
+  switch (act) {
+    case "goSetup": S.screen = "setup"; render(); break;
+    case "continue": startGame(); break;
+    case "start": startGame(); break;
+    case "openCategories": S.screen = "categories"; render(); break;
+    case "openPlayers": S.modal = "players"; render(); break;
+    case "openHow": S.modal = "how"; render(); break;
+    case "closeModal":
+      if (el.classList.contains("modal-bg") && e.target !== el) break;
+      S.modal = null; save(); render(); break;
+    case "addPlayer":
+      if (st.players.length < 16) { st.players.push("Player " + (st.players.length + 1)); save(); render(); }
+      break;
+    case "removePlayer": {
+      const i = +el.dataset.i;
+      if (st.players.length > 3) { st.players.splice(i, 1); save(); render(); }
+      break;
+    }
+    case "step": {
+      const d = +el.dataset.d;
+      if (el.dataset.k === "players") {
+        if (d > 0 && st.players.length < 16) st.players.push("Player " + (st.players.length + 1));
+        if (d < 0 && st.players.length > 3) st.players.pop();
+        st.imposters = Math.min(st.imposters, maxImposters(st.players.length));
+      } else {
+        const mx = maxImposters(st.players.length);
+        st.imposters = Math.max(1, Math.min(mx, Math.min(st.imposters, mx) + d));
+      }
+      save(); render(); break;
+    }
+    case "toggleTime": st.timeOn = !st.timeOn; save(); render(); break;
+    case "setTime": st.timeSec = +el.dataset.v; save(); render(); break;
+    case "toggleHint": st.hintOn = !st.hintOn; save(); render(); break;
+    case "toggleCat": {
+      const id = el.dataset.id;
+      st.categories = st.categories.includes(id) ? st.categories.filter(x => x !== id) : [...st.categories, id];
+      save(); render(); break;
+    }
+    case "allCats":
+      st.categories = st.categories.length === CATEGORIES.length ? [] : CATEGORIES.map(c => c.id);
+      save(); render(); break;
+
+    /* game flow */
+    case "showReveal": S.screen = "reveal"; render(); break;
+    case "nextCard": nextCard(); break;
+    case "reveal": clearInterval(timerHandle); timerHandle = null; S.screen = "final"; render(); break;
+    case "goHome": goHome(); break;
+  }
+});
+
+$app.addEventListener("input", e => {
+  if (e.target.matches("[data-input='player']")) {
+    S.settings.players[+e.target.dataset.i] = e.target.value;
+    save();
+  }
+});
+
+/* Hold-to-reveal: press shows the card, release anywhere hides it */
+$app.addEventListener("pointerdown", e => {
+  if (S.screen !== "reveal" || !e.target.closest("[data-hold]") || S.game.showing) return;
+  S.game.showing = true; S.game.seenOnce = true; render();
+});
+const releaseReveal = () => {
+  if (S.screen !== "reveal" || !S.game || !S.game.showing) return;
+  S.game.showing = false; render();
+};
+document.addEventListener("pointerup", releaseReveal);
+document.addEventListener("pointercancel", releaseReveal);
+$app.addEventListener("contextmenu", e => e.preventDefault());
+
+render();
+})();
+</script>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a49de8a7d909556f',t:'MTc5MTg4OTk0MQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
